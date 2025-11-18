@@ -11,5 +11,5 @@ services:
         value: "7656744783:AAGvO38tzVHkGDu8UAt8uj6Oq-sIbf0xYok"
       - key: WEBHOOK_URL
         fromDatabase: false
-        value: "https://<ВАШ_ПУБЛИЧНЫЙ_URL>.onrender.com"
+        value: "https://simplenumberswebhook.onrender.com"
     autoDeploy: true
