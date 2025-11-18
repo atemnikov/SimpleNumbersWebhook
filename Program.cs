@@ -32,6 +32,8 @@ app.MapPost("/bot", async (HttpRequest request) =>
 
         var chatId = update.Message.Chat.Id;
         var text = update.Message.Text;
+        
+        Console.WriteLine($"Получено сообщение '{text}' в чате {chatId}.");        
 
         if (text.StartsWith("/start"))
         {
