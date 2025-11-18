@@ -137,21 +137,23 @@ string ProcessMultipleNumbers(List<long> numbers)
         result += $"{number} = {FormatFactors(factors)}\n";
     }
     
-    // Проверяем, что все числа валидны для НОД/НОК
-    var validNumbers = numbers.Where(n => n >= 2).ToList();
-    if (validNumbers.Count < 2)
-    {
-        result += "\n⚠️ Для вычисления НОД и НОК нужно минимум 2 числа больше 1.";
-        return result;
-    }
-    
     // Вычисляем НОД и НОК
-    var gcd = CalculateGCD(validNumbers);
-    var lcm = CalculateLCM(validNumbers);
+    var gcd = CalculateGCD(numbers);
+    var lcm = CalculateLCM(numbers);
     
-    result += $"\nНОД = {gcd} = {FormatFactors(Factorize(gcd))}";
-    
-    result += $"\nНОК = {lcm} = {FormatFactors(Factorize(lcm))}";
+    result += $"\nНОД = {gcd}";
+
+    if (gcd >= 2)
+    {
+        result += $" = {FormatFactors(Factorize(gcd))}";
+    }
+
+    result += $"\nНОК = {lcm}";
+
+    if (lcm >= 2)
+    {
+        result += $" = {FormatFactors(Factorize(lcm))}";
+    }
     
     return result;
 }
@@ -210,8 +212,6 @@ List<(long factor, int count)> Factorize(long n)
 
     if (temp > 1) factors.Add((temp, 1));
     
-    if(factors.Count == 0) factors.Add((1, 1));
-
     return factors;
 }
 
