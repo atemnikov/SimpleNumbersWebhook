@@ -113,5 +113,5 @@ string FormatFactorization(long number, List<(long factor, int count)> factors)
     var factorization = string.Join(" × ", factors
         .Select(f => f.count > 1 ? $"{f.factor}{ToSuperscript(f.count)}" : f.factor.ToString()));
 
-    return $"{number} = {factorization}";
+    return $"{number} == {factorization}";
 }
