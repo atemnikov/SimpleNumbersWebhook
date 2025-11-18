@@ -74,6 +74,10 @@ app.MapPost("/bot", async (HttpRequest request) =>
     return Results.Ok();
 });
 
+// 🔥 Добавлено для Render — НЕ засыпать
+app.MapGet("/", () => "OK");
+app.MapGet("/ping", () => "pong");
+
 app.Run("http://0.0.0.0:10000");
 
 List<(long factor, int count)> Factorize(long n)
