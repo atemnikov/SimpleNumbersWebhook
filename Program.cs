@@ -149,9 +149,9 @@ string ProcessMultipleNumbers(List<long> numbers)
     var gcd = CalculateGCD(validNumbers);
     var lcm = CalculateLCM(validNumbers);
     
-    result += $"\nНОД = {gcd} = {FormatFactors(Factorize(gcd))}\n";
+    result += $"\nНОД = {gcd} = {FormatFactors(Factorize(gcd))}";
     
-    result += $"\nНОК = {lcm} = {FormatFactors(Factorize(lcm))}\n";
+    result += $"\nНОК = {lcm} = {FormatFactors(Factorize(lcm))}";
     
     return result;
 }
