@@ -39,31 +39,53 @@ app.MapPost("/bot", async (HttpRequest request) =>
         {
             await botClient.SendTextMessageAsync(chatId,
                 "Привет! Я бот для разложения чисел на простые множители.\n" +
-                "Просто отправь мне любое целое число, и я разложу его на простые множители.\n\nПример: 84");
+                "Отправь мне числа через запятую или пробел, и я:\n" +
+                "• Разложу каждое число на простые множители\n" +
+                "• Найду НОД и НОК всех чисел\n" +
+                "• Покажу разложение НОД и НОК на простые числа\n\n" +
+                "Пример: 12, 18, 24 или 12 18 24");
         }
         else if (text.StartsWith("/help"))
         {
             await botClient.SendTextMessageAsync(chatId,
                 "Как пользоваться ботом:\n\n" +
-                "• Отправь любое целое число (от 2 до 2,147,483,647)\n" +
-                "• Я разложу его на простые множители\n" +
-                "• Пример: 84 = 2² × 3 × 7\n\n" +
+                "• Отправь числа через запятую или пробел (от 2 до 2,147,483,647)\n" +
+                "• Я разложу каждое число на простые множители\n" +
+                "• Найду НОД (наибольший общий делитель) и НОК (наименьшее общее кратное)\n" +
+                "• Покажу разложение НОД и НОК на простые числа\n\n" +
+                "Примеры:\n" +
+                "12, 18, 24\n" +
+                "12 18 24\n" +
+                "8, 12\n\n" +
                 "Команды:\n" +
                 "/start - начать работу\n" +
                 "/help - справка");
         }
-        else if (long.TryParse(text, out long number))
-        {
-            if (number < 2)
-                await botClient.SendTextMessageAsync(chatId, "Введите число больше 1.");
-            else if (number > int.MaxValue)
-                await botClient.SendTextMessageAsync(chatId, "Число слишком большое. Введите до 2,147,483,647.");
-            else
-                await botClient.SendTextMessageAsync(chatId, FormatFactorization(number, Factorize(number)));
-        }
         else
         {
-            await botClient.SendTextMessageAsync(chatId, "Введите корректное целое число.");
+            var numbers = ParseNumbers(text);
+            if (numbers.Count == 0)
+            {
+                await botClient.SendTextMessageAsync(chatId, 
+                    "Не удалось найти числа. Введите числа через запятую или пробел.\n\nПример: 12, 18, 24");
+            }
+            else if (numbers.Count == 1)
+            {
+                // Одно число - только разложение
+                var number = numbers[0];
+                if (number < 2)
+                    await botClient.SendTextMessageAsync(chatId, "Введите число больше 1.");
+                else if (number > int.MaxValue)
+                    await botClient.SendTextMessageAsync(chatId, "Число слишком большое. Введите до 2,147,483,647.");
+                else
+                    await botClient.SendTextMessageAsync(chatId, FormatFactorization(number, Factorize(number)));
+            }
+            else
+            {
+                // Несколько чисел - разложение + НОД + НОК
+                var result = ProcessMultipleNumbers(numbers);
+                await botClient.SendTextMessageAsync(chatId, result);
+            }
         }
     }
     catch (Exception ex)
@@ -79,6 +101,99 @@ app.MapGet("/", () => "OK");
 app.MapGet("/ping", () => "pong");
 
 app.Run("http://0.0.0.0:10000");
+
+List<long> ParseNumbers(string input)
+{
+    var numbers = new List<long>();
+    
+    // Разделяем по запятым или пробелам
+    var parts = input.Split(new[] { ',', ' ', ';', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+    
+    foreach (var part in parts)
+    {
+        if (long.TryParse(part.Trim(), out long number))
+        {
+            numbers.Add(number);
+        }
+    }
+    
+    return numbers;
+}
+
+string ProcessMultipleNumbers(List<long> numbers)
+{
+    var result = "🔢 *Результаты анализа чисел:*\n\n";
+    
+    // Разложение каждого числа
+    result += "📊 *Разложение на простые множители:*\n";
+    foreach (var number in numbers)
+    {
+        if (number < 2)
+        {
+            result += $"{number} - должно быть больше 1\n";
+            continue;
+        }
+        
+        var factors = Factorize(number);
+        result += $"{number} = {FormatFactors(factors)}\n";
+    }
+    
+    // Проверяем, что все числа валидны для НОД/НОК
+    var validNumbers = numbers.Where(n => n >= 2).ToList();
+    if (validNumbers.Count < 2)
+    {
+        result += "\n⚠️ Для вычисления НОД и НОК нужно минимум 2 числа больше 1.";
+        return result;
+    }
+    
+    // Вычисляем НОД и НОК
+    var gcd = CalculateGCD(validNumbers);
+    var lcm = CalculateLCM(validNumbers);
+    
+    result += $"\n🔍 *НОД* (наибольший общий делитель) = {gcd}\n";
+    result += $"Разложение: {FormatFactors(Factorize(gcd))}\n";
+    
+    result += $"\n🔍 *НОК* (наименьшее общее кратное) = {lcm}\n";
+    result += $"Разложение: {FormatFactors(Factorize(lcm))}";
+    
+    return result;
+}
+
+long CalculateGCD(List<long> numbers)
+{
+    long result = numbers[0];
+    for (int i = 1; i < numbers.Count; i++)
+    {
+        result = GCD(result, numbers[i]);
+    }
+    return result;
+}
+
+long CalculateLCM(List<long> numbers)
+{
+    long result = numbers[0];
+    for (int i = 1; i < numbers.Count; i++)
+    {
+        result = LCM(result, numbers[i]);
+    }
+    return result;
+}
+
+long GCD(long a, long b)
+{
+    while (b != 0)
+    {
+        long temp = b;
+        b = a % b;
+        a = temp;
+    }
+    return a;
+}
+
+long LCM(long a, long b)
+{
+    return (a / GCD(a, b)) * b;
+}
 
 List<(long factor, int count)> Factorize(long n)
 {
@@ -104,7 +219,11 @@ List<(long factor, int count)> Factorize(long n)
 string FormatFactorization(long number, List<(long factor, int count)> factors)
 {
     if (!factors.Any()) return $"{number} - простое число";
+    return $"{number} = {FormatFactors(factors)}";
+}
 
+string FormatFactors(List<(long factor, int count)> factors)
+{
     string ToSuperscript(int num)
     {
         var map = new Dictionary<char, char> {
@@ -114,8 +233,6 @@ string FormatFactorization(long number, List<(long factor, int count)> factors)
         return string.Concat(num.ToString().Select(c => map[c]));
     }
 
-    var factorization = string.Join(" × ", factors
+    return string.Join(" × ", factors
         .Select(f => f.count > 1 ? $"{f.factor}{ToSuperscript(f.count)}" : f.factor.ToString()));
-
-    return $"{number} = {factorization}";
 }
