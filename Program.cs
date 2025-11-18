@@ -209,6 +209,8 @@ List<(long factor, int count)> Factorize(long n)
     }
 
     if (temp > 1) factors.Add((temp, 1));
+    
+    if(factors.Count == 0) factors.Add((1, 1));
 
     return factors;
 }
