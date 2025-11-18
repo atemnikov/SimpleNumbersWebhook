@@ -122,10 +122,9 @@ List<long> ParseNumbers(string input)
 
 string ProcessMultipleNumbers(List<long> numbers)
 {
-    var result = "🔢 *Результаты анализа чисел:*\n\n";
+    var result = "";
     
     // Разложение каждого числа
-    result += "📊 *Разложение на простые множители:*\n";
     foreach (var number in numbers)
     {
         if (number < 2)
@@ -150,11 +149,9 @@ string ProcessMultipleNumbers(List<long> numbers)
     var gcd = CalculateGCD(validNumbers);
     var lcm = CalculateLCM(validNumbers);
     
-    result += $"\n🔍 *НОД* (наибольший общий делитель) = {gcd}\n";
-    result += $"Разложение: {FormatFactors(Factorize(gcd))}\n";
+    result += $"\nНОД = {gcd} = {FormatFactors(Factorize(gcd))}\n";
     
-    result += $"\n🔍 *НОК* (наименьшее общее кратное) = {lcm}\n";
-    result += $"Разложение: {FormatFactors(Factorize(lcm))}";
+    result += $"\nНОК = {lcm} = {FormatFactors(Factorize(lcm))}\n";
     
     return result;
 }
